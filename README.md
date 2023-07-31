@@ -5,13 +5,14 @@ This app is built using React Native and Iterable's React Native SDK. It can be 
 ## Important to note
 
 - Make sure you have NodeJS and NPM installed on your computer 
-
+- All code is found under the components folder
+- Swap out your API key and login using user id or email 
 
 ## Run Instructions 
 
 1. Run `npm install`  in the root directory 
 2. In the components/App.js file, swap out `YOUR_API_KEY` for your Iterable API key 
 3. Run `npm start ` 
+
 - For iOS, open up Xcode and run the app there as well
 - For Android, open up Android Studio
-

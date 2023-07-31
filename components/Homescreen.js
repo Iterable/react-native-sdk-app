@@ -14,17 +14,12 @@ export default class Homescreen extends Component {
         this.props.navigation.navigate('Detail', { item: item });
     }
 
-    hello = () => {
-        console.log('hello');
-    }
-
     render() {
         return (
             React.createElement(ScrollView, { contentContainerStyle: styles.container }, null, items.map((item, i) => (
                 <Card key={i} wrapperStyle={ styles.item }>
                           <View
                             style={{
-                              // position: "relative",
                               alignItems: "center"
                             }}
                             onPress={()=> this.hello()}

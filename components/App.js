@@ -56,8 +56,6 @@ export default class App extends React.Component {
 
     }
 
-
-
     render() {
         const Tab = createBottomTabNavigator();
         return (
@@ -78,8 +76,6 @@ export default class App extends React.Component {
         );
 
     }
-
-
 
     navigate(item) {
         if (this.homeTabRef && this.homeTabRef.current) {
