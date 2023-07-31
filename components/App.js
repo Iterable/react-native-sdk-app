@@ -13,10 +13,10 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.homeTabRef = React.createRef();
-        const iterableAPIKey = '1ca86ebe5f114d9f9ef94c2210c32e91';
+        const iterableAPIKey = 'YOUR_API_KEY';
         const config = new IterableConfig();
-        
-         config.urlHandler = (url, context) => {
+
+        config.urlHandler = (url, context) => {
             console.log(`urlHandler, url: ${url}`);
             let match = url.match(/item\/([^\/]+)/i);
             if (match && match.length > 1) {
