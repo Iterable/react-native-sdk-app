@@ -1,11 +1,12 @@
 #import "AppDelegate.h"
+#import "IterableSDK-Swift.h"
+#import "IterableAppExtensions-Swift.h"
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #import <React/RCTLinkingManager.h>
 #import <React/RCTConvert.h>
-
 #import <React/RCTAppSetupUtils.h>
 
 #if RCT_NEW_ARCH_ENABLED
@@ -31,9 +32,21 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
 @implementation AppDelegate
 
+// - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
+//   sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+// {
+//   return [RCTLinkingManager application:application openURL:url
+//                       sourceApplication:sourceApplication annotation:annotation];
+// }
+
+// Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  RCTAppSetupPrepareApp(application);
+
+    [self setupNotifications];
+    
+  RCTAppSetupPrepareApp(application, true);
 
   RCTBridge *bridge = [self.reactDelegate createBridgeWithDelegate:self launchOptions:launchOptions];
 
@@ -56,8 +69,19 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   [self.window makeKeyAndVisible];
 
   [super application:application didFinishLaunchingWithOptions:launchOptions];
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    center.delegate = self;
 
   return YES;
+}
+
+#pragma mark - UNUserNotificationCenterDelegate
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+    completionHandler(UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionList | UNNotificationPresentationOptionSound);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)(void))completionHandler {
+    [IterableAppIntegration userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
 }
 
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
@@ -107,9 +131,10 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 }
 
 // Explicitly define remote notification delegates to ensure compatibility with some third-party libraries
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
-{
-  return [super application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    [IterableAPI registerToken:deviceToken];
+    
+    NSLog(@"My token is: %@", deviceToken);
 }
 
 // Explicitly define remote notification delegates to ensure compatibility with some third-party libraries
@@ -119,10 +144,32 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 }
 
 // Explicitly define remote notification delegates to ensure compatibility with some third-party libraries
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
-{
-  return [super application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    [IterableAppIntegration application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
 }
+
+- (void) setupNotifications {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    center.delegate = self;
+    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+        if (settings.authorizationStatus != UNAuthorizationStatusAuthorized) {
+            // not authorized, ask for permission
+            [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionBadge | UNAuthorizationOptionSound) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                if (granted) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [UIApplication.sharedApplication registerForRemoteNotifications];
+                    });
+                } // TODO: handle errors
+            }];
+        } else {
+            // already authorized
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [UIApplication.sharedApplication registerForRemoteNotifications];
+            });
+        }
+    }];
+}
+
 
 #if RCT_NEW_ARCH_ENABLED
 
@@ -162,5 +209,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 }
 
 #endif
+
+
 
 @end
