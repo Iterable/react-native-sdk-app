@@ -13,7 +13,7 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.homeTabRef = React.createRef();
-        const iterableAPIKey = 'YOUR_API_KEY';
+        const iterableAPIKey = '1ca86ebe5f114d9f9ef94c2210c32e91';
         const config = new IterableConfig();
 
         config.urlHandler = (url, context) => {

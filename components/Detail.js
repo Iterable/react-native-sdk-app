@@ -9,11 +9,14 @@ export default class Detail extends Component {
     constructor(props) {
         super(props);
         this.buyTapped = () => {
-            console.log('bought item');
             const item = this.props.route.params.item;
-            console.log('item:', item);
-            let purchasedItem = new IterableCommerceItem(item.id, item.name, item.price, 1);
-            Iterable.trackPurchase(item.price, [purchasedItem], null);
+            let purchasedItem = new IterableCommerceItem(item.id, item.name, item.price, 1, null, item.name, null, item.img, item.category);
+            
+            console.log('purchased item:', purchasedItem); 
+            
+            let dataFields = {"category": item.category}; 
+            Iterable.updateCart([purchasedItem]);
+            Iterable.trackPurchase(item.price, [purchasedItem], dataFields);
             this.props.navigation.goBack();
         };
     }
